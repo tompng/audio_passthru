@@ -58,13 +58,14 @@ class AudioPassthru {
     return null;
   }
   public static void main(String args[]) throws Exception{
+    int bufferSize = 4096;
     AudioFormat format = new AudioFormat(44100, 16, 2, true, false);
     DataLine.Info targetInfo = new DataLine.Info(TargetDataLine.class, format);
     DataLine.Info sourceInfo = new DataLine.Info(SourceDataLine.class, format);
     TargetDataLine input = (TargetDataLine)selectLine(targetInfo, argOption(args, "-i"));
     SourceDataLine output = (SourceDataLine)selectLine(sourceInfo, argOption(args, "-o"));
-    input.open(format);
-    output.open(format);
+    input.open(format, bufferSize);
+    output.open(format, bufferSize);
     input.start();
     output.start();
     new Thread(()->{
@@ -76,7 +77,7 @@ class AudioPassthru {
       }
     }).start();
 
-    byte[] data=new byte[256];
+    byte[] data=new byte[bufferSize];
     while(true){
       input.read(data, 0, data.length);
       output.write(data, 0, data.length);
