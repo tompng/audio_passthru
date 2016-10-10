@@ -67,7 +67,15 @@ class AudioPassthru {
     output.open(format);
     input.start();
     output.start();
-    System.out.println("now passing through");
+    new Thread(()->{
+      for(int i = 0;; i++){
+        int dots = i % 4;
+        String dddots = "...".substring(0, dots)+"   ".substring(dots);
+        System.out.print("\rnow passing through" + dddots);
+        try{Thread.sleep(1000);}catch(Exception e){}
+      }
+    }).start();
+
     byte[] data=new byte[256];
     while(true){
       input.read(data, 0, data.length);
