@@ -70,7 +70,7 @@ class AudioPassthru {
     new Thread(()->{
       for(int i = 0;; i++){
         int dots = i % 4;
-        String dddots = "...".substring(0, dots)+"   ".substring(dots);
+        String dddots = "...".substring(0, dots) + "   ".substring(dots);
         System.out.print("\rnow passing through" + dddots);
         try{Thread.sleep(1000);}catch(Exception e){}
       }
