@@ -5,30 +5,38 @@ class AudioPassthru {
     boolean isSource = lineInfo.getLineClass() == SourceDataLine.class;
     String iotype = isSource ? "output" : "input";
     Mixer.Info[] infos = AudioSystem.getMixerInfo();
-    if(format!=null){
-      for(Mixer.Info mi: infos){
-        Mixer m = AudioSystem.getMixer(mi);
-        if(m.getSourceLineInfo(lineInfo).length==0&&m.getTargetLineInfo(lineInfo).length==0)continue;
-        if(nameMatch(mi.getName(),format))return m.getLine(lineInfo);
-      }
-      throw new Exception(iotype+" device '"+format+"' not found");
-    }
     ArrayList<Mixer> mixers = new ArrayList<Mixer>();
-    System.out.println("select "+iotype+" device");
+    if(format == null)System.out.println("\nSelect "+iotype+" device");
     for(Mixer.Info mi: infos){
       Mixer m = AudioSystem.getMixer(mi);
       if(m.getSourceLineInfo(lineInfo).length==0&&m.getTargetLineInfo(lineInfo).length==0)continue;
-      System.out.println(mixers.size()+" "+mi.getName());
+      if(format==null){
+        System.out.println(mixers.size()+" "+mi.getName());
+      }else if(nameMatch(mi.getName(),format)){
+        System.out.println(iotype+": "+mi.getName());
+        return m.getLine(lineInfo);
+      }
       mixers.add(m);
     }
+    if(format!=null){
+      System.err.println("\u001B[1mError: "+iotype+" device '"+format+"' not found\u001B[m");
+      System.err.println("Available devices are:");
+      for(Mixer m: mixers)System.out.println(m.getMixerInfo().getName());
+      System.exit(-1);
+    }
     if(mixers.isEmpty()){
-      throw new Exception("no "+iotype+" device");
+      System.err.println("\u001B[1mError: no "+iotype+" device\u001B[m");
+      System.exit(-1);
     }
     while(true){
       System.out.print("> ");
-      int index = new Scanner(System.in).nextInt();
+      int index = -1;
+      try{index = new Scanner(System.in).nextInt();}catch(Exception e){}
       if(0<=index&&index<mixers.size()){
-        return mixers.get(index).getLine(lineInfo);
+        Mixer m = mixers.get(index);
+        System.out.println(m.getMixerInfo().getName());
+        System.out.println();
+        return m.getLine(lineInfo);
       }
     }
   }
@@ -50,11 +58,11 @@ class AudioPassthru {
     DataLine.Info sourceinfo=new DataLine.Info(SourceDataLine.class, format);
     TargetDataLine input = (TargetDataLine)selectLine(targetinfo, argOption(args, "-i"));
     SourceDataLine output = (SourceDataLine)selectLine(sourceinfo, argOption(args, "-o"));
-
     input.open(format);
     output.open(format);
     input.start();
     output.start();
+    System.out.println("now passing through");
     AudioInputStream in=new AudioInputStream(input);
     byte[] data=new byte[256];
     while(true){
