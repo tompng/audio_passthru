@@ -57,7 +57,18 @@ class AudioPassthru {
     }
     return null;
   }
+  static void help(String args[]){
+    for(String s: args){
+      if(s.equals("-h") || s.equals("-help") || s.equals("--help")){
+        System.out.println("Audio Passthru");
+        System.out.println("  -i input-device ");
+        System.out.println("  -o output-device");
+        System.exit(0);
+      }
+    }
+  }
   public static void main(String args[]) throws Exception{
+    help(args);
     int bufferSize = 4096;
     AudioFormat format = new AudioFormat(44100, 16, 2, true, false);
     DataLine.Info targetInfo = new DataLine.Info(TargetDataLine.class, format);
